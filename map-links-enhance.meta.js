@@ -2,7 +2,7 @@
 // @name           IITC plugin: Map links enhance
 // @author         Nux
 // @category       Misc
-// @version        0.0.1
+// @version        0.1.0
 // @description    Better map links...
 // @namespace      pl.enux.iitc
 // @match          https://intel.ingress.com/*

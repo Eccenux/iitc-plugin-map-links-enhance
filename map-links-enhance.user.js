@@ -2,7 +2,7 @@
 // @name           IITC plugin: Map links enhance
 // @author         Nux
 // @category       Misc
-// @version        0.0.1
+// @version        0.1.0
 // @description    Better map links...
 // @namespace      pl.enux.iitc
 // @match          https://intel.ingress.com/*
@@ -10,7 +10,7 @@
 // @updateURL      https://github.com/Eccenux/iitc-plugin-map-links-enhance/raw/master/map-links-enhance.meta.js
 // @downloadURL    https://github.com/Eccenux/iitc-plugin-map-links-enhance/raw/master/map-links-enhance.user.js
 // ==/UserScript==
-/* global android, dialog */
+/* global android, dialog, $ */
 
 // Notes
 /**
@@ -26,7 +26,9 @@ class MapLinksEnhance {
 	}
 	setup() {
 		console.log(this.pluginTag, 'setup', window.showPortalPosLinks);
-		window.showPortalPosLinks = this.showPortalPosLinks;
+		window.showPortalPosLinks = (lat, lng, name) => {
+			this.showPortalPosLinks(lat, lng, name);
+		}
 	}
 
 	showPortalPosLinks (lat, lng, name) {
@@ -40,18 +42,46 @@ class MapLinksEnhance {
 		if (typeof android !== 'undefined' && android && android.intentPosLink) {
 			android.intentPosLink(lat, lng, map.getZoom(), name, true);
 		} else {
-			var qrcode = '<div id="qrcode"></div>';
-			var script = '<script>$(\'#qrcode\').qrcode({text:\'GEO:' + lat + ',' + lng + '\'});</script>';
+			var qrcode = '<div class="qrcode"></div>';
 			var gmaps = '<a target="_blank" href="https://maps.google.com/maps?ll=' + lat + ',' + lng + '&q=' + lat + ',' + lng + '%20(' + encoded_name + ')">Google Maps</a>';
 			var bingmaps = '<a target="_blank" href="http://www.bing.com/maps/?v=2&cp=' + lat + '~' + lng + '&lvl=16&sp=Point.' + lat + '_' + lng + '_' + encoded_name + '___">Bing Maps</a>';
 			var osm = '<a target="_blank" href="http://www.openstreetmap.org/?mlat=' + lat + '&mlon=' + lng + '&zoom=16">OpenStreetMap</a>';
 			var latLng = '<a target="_blank" href="geo:' + lat + ',' + lng + '">&lt;' + lat + ',' + lng + '&gt;</a>';
-			dialog({
-				html: '<div style="text-align: center;">' + qrcode + script + gmaps + '; ' + bingmaps + '; ' + osm + '<br />' + latLng + '</div>',
+			latLng += '<input type="text" class="portalLocField" value="' + lat + ',' + lng + '">';
+			latLng += '&nbsp;<a href="javascript:void(0)" class="portalLocCopy">copy 📋</a>';
+			var $dialogItem = dialog({
+				html: `<div style="text-align: center;">${qrcode}<div style="margin:1em">${gmaps} • ${bingmaps} • ${osm}</div>${latLng}</div>`,
 				title: name,
 				id: 'poslinks'
 			});
+
+			//
+			// actions setup
+			var dialogItem = $dialogItem[0];
+
+			// qrcode 
+			$('.qrcode', dialogItem).qrcode({text:'GEO:' + lat + ',' + lng});
+
+			// copy loc. 
+			var locField = dialogItem.querySelector('.portalLocField');
+			var locButton = dialogItem.querySelector('.portalLocCopy');
+			locButton.onclick = () => {
+				console.log(locField);
+				this.copyTextField(locField);
+			}
 		}
+	}
+
+	/**
+	 * Copy text field contents.
+	 * @param {Element|String} source Element or selector.
+	 */
+	copyTextField(source) {
+		if (typeof source === 'string') {
+			source = document.querySelector(source);
+		}
+		source.select();
+		document.execCommand("copy");
 	}
 }
 
