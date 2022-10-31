@@ -1,7 +1,7 @@
 # IITC plugin: Map links enhance
 
-- location copy btn
-- ll:link
+- location copy btn (copy to clipboard)
+- geo:ll link (lat,lon to map apps)
 
 Installation
 ------------
