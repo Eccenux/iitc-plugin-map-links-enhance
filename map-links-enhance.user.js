@@ -10,7 +10,7 @@
 // @updateURL      https://github.com/Eccenux/iitc-plugin-map-links-enhance/raw/master/map-links-enhance.meta.js
 // @downloadURL    https://github.com/Eccenux/iitc-plugin-map-links-enhance/raw/master/map-links-enhance.user.js
 // ==/UserScript==
-/* global GM_info, android, dialog */
+/* global android, dialog */
 
 // Notes
 /**
@@ -21,24 +21,30 @@ Function called onclick is `window.showPortalPosLinks`
 /**/
 
 class MapLinksEnhance {
+	constructor() {
+		this.pluginTag = '[MapLinksEnhance]'
+	}
 	setup() {
+		console.log(this.pluginTag, 'setup', window.showPortalPosLinks);
 		window.showPortalPosLinks = this.showPortalPosLinks;
 	}
 
-	showPortalPosLinks = function (lat, lng, name) {
+	showPortalPosLinks (lat, lng, name) {
+		console.log(this.pluginTag, 'showPortalPosLinks', name);
+
 		var encoded_name = 'undefined';
 		if (name !== undefined) {
 			encoded_name = encodeURIComponent(name);
 		}
-	
+
 		if (typeof android !== 'undefined' && android && android.intentPosLink) {
 			android.intentPosLink(lat, lng, map.getZoom(), name, true);
 		} else {
 			var qrcode = '<div id="qrcode"></div>';
 			var script = '<script>$(\'#qrcode\').qrcode({text:\'GEO:' + lat + ',' + lng + '\'});</script>';
-			var gmaps = '<a href="https://maps.google.com/maps?ll=' + lat + ',' + lng + '&q=' + lat + ',' + lng + '%20(' + encoded_name + ')">Google Maps</a>';
-			var bingmaps = '<a href="http://www.bing.com/maps/?v=2&cp=' + lat + '~' + lng + '&lvl=16&sp=Point.' + lat + '_' + lng + '_' + encoded_name + '___">Bing Maps</a>';
-			var osm = '<a href="http://www.openstreetmap.org/?mlat=' + lat + '&mlon=' + lng + '&zoom=16">OpenStreetMap</a>';
+			var gmaps = '<a target="_blank" href="https://maps.google.com/maps?ll=' + lat + ',' + lng + '&q=' + lat + ',' + lng + '%20(' + encoded_name + ')">Google Maps</a>';
+			var bingmaps = '<a target="_blank" href="http://www.bing.com/maps/?v=2&cp=' + lat + '~' + lng + '&lvl=16&sp=Point.' + lat + '_' + lng + '_' + encoded_name + '___">Bing Maps</a>';
+			var osm = '<a target="_blank" href="http://www.openstreetmap.org/?mlat=' + lat + '&mlon=' + lng + '&zoom=16">OpenStreetMap</a>';
 			var latLng = '<span>&lt;' + lat + ',' + lng + '&gt;</span>';
 			dialog({
 				html: '<div style="text-align: center;">' + qrcode + script + gmaps + '; ' + bingmaps + '; ' + osm + '<br />' + latLng + '</div>',
@@ -46,17 +52,21 @@ class MapLinksEnhance {
 				id: 'poslinks'
 			});
 		}
-	}	
+	}
 }
 
 // ensure plugin framework is there, even if iitc is not yet loaded
 if (typeof window.plugin !== 'function') window.plugin = function () {};
-window.plugin.mapLinksEnhance = new MapLinksEnhance;
-// PLUGIN END //////////////////////////////////////////////////////////
+window.plugin.mapLinksEnhance = new MapLinksEnhance();
 
+//////////////////////////////////////////////////////////////////////////
+// PLUGIN SETUP //////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
 // only small wrapper to allow debugging
 function wrapper(plugin_info) {
-	var setup = window.plugin.mapLinksEnhance.setup;
+	var setup = function () {
+		window.plugin.mapLinksEnhance.setup();
+	}
 
 	setup.info = plugin_info; //add the script info data to the function as a property
 	if (!window.bootPlugins) window.bootPlugins = [];
