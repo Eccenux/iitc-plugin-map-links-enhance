@@ -2,7 +2,7 @@
 // @name           IITC plugin: Map links enhance
 // @author         Nux
 // @category       Misc
-// @version        0.1.0
+// @version        0.2.0
 // @description    Better map links...
 // @namespace      pl.enux.iitc
 // @match          https://intel.ingress.com/*
@@ -22,7 +22,19 @@ Function called onclick is `window.showPortalPosLinks`
 
 class MapLinksEnhance {
 	constructor() {
-		this.pluginTag = '[MapLinksEnhance]'
+		this.pluginTag = '[MapLinksEnhance]';
+		this.style = {
+			offscreen: `
+				position:absolute;
+				clip:rect(1px 1px 1px 1px);
+				clip:rect(1px, 1px, 1px, 1px);
+				padding:0;
+				border:0;
+				height:1px;
+				width:1px;
+				overflow:hidden;
+			`
+		}
 	}
 	setup() {
 		console.log(this.pluginTag, 'setup', window.showPortalPosLinks);
@@ -47,7 +59,7 @@ class MapLinksEnhance {
 			var bingmaps = '<a target="_blank" href="http://www.bing.com/maps/?v=2&cp=' + lat + '~' + lng + '&lvl=16&sp=Point.' + lat + '_' + lng + '_' + encoded_name + '___">Bing Maps</a>';
 			var osm = '<a target="_blank" href="http://www.openstreetmap.org/?mlat=' + lat + '&mlon=' + lng + '&zoom=16">OpenStreetMap</a>';
 			var latLng = '<a target="_blank" href="geo:' + lat + ',' + lng + '">&lt;' + lat + ',' + lng + '&gt;</a>';
-			latLng += '<input type="text" class="portalLocField" value="' + lat + ',' + lng + '">';
+			latLng += `<input type="text" class="portalLocField" value="${lat},${lng}" style="${this.style.offscreen}" readonly="readonly">`;
 			latLng += '&nbsp;<a href="javascript:void(0)" class="portalLocCopy">copy 📋</a>';
 			var $dialogItem = dialog({
 				html: `<div style="text-align: center;">${qrcode}<div style="margin:1em">${gmaps} • ${bingmaps} • ${osm}</div>${latLng}</div>`,
@@ -66,8 +78,8 @@ class MapLinksEnhance {
 			var locField = dialogItem.querySelector('.portalLocField');
 			var locButton = dialogItem.querySelector('.portalLocCopy');
 			locButton.onclick = () => {
-				console.log(locField);
 				this.copyTextField(locField);
+				locButton.focus();
 			}
 		}
 	}
